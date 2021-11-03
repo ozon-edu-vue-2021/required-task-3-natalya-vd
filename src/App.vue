@@ -1,8 +1,12 @@
 <template>
   <div id="app">
     <div class="office">
-      <Map />
-      <SideMenu />
+      <Map @person="changePerson($event)" />
+      <SideMenu
+        :person="person"
+        :isUserOpenned="isUserOpenned"
+        @update:isUserOpenned="openProfile($event)"
+      />
     </div>
   </div>
 </template>
@@ -16,6 +20,24 @@ export default {
   components: {
     Map,
     SideMenu,
+  },
+
+  data() {
+    return {
+      person: null,
+      isUserOpenned: false,
+    };
+  },
+
+  methods: {
+    changePerson(event) {
+      this.person = event;
+      this.openProfile(true);
+    },
+
+    openProfile(open) {
+      this.isUserOpenned = open;
+    },
   },
 };
 </script>

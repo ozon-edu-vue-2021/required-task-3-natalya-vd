@@ -1,7 +1,10 @@
 <template>
   <div class="person">
     <div class="person__photo">
-      <img :src="person.picture" alt="photo" />
+      <img
+        :src="person.picture"
+        alt="photo"
+      />
     </div>
     <div class="person__info">
       <div class="person__info-name">
@@ -16,6 +19,8 @@
 </template>
 
 <script>
+import { parseISO, format } from "date-fns";
+
 export default {
   props: {
     person: {
@@ -25,7 +30,7 @@ export default {
   },
   computed: {
     formatedDate() {
-      return this.person.registered;
+      return format(parseISO(this.person.registered), "dd.MM.yyyy");
     },
   },
 };

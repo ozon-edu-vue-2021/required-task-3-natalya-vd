@@ -1,5 +1,8 @@
 <template>
-  <div class="menu">
+  <div
+    class="menu"
+    v-click-outside="closeProfile"
+  >
     <div class="toolbar">
       <div class="toolbar__header">
         <template v-if="!isUserOpenned">
@@ -7,7 +10,10 @@
         </template>
         <template v-else>
           <div class="action">
-            <div class="arrow" @click="closeProfile"></div>
+            <div
+              class="arrow"
+              @click="closeProfile"
+            ></div>
           </div>
           <h3>Профиль</h3>
         </template>
@@ -15,28 +21,51 @@
       <div class="toolbar__actions"></div>
     </div>
     <div class="content">
-      <div v-if="!isUserOpenned" class="legend">
+      <div
+        v-if="!isUserOpenned"
+        class="legend"
+      >
         <div class="legend__data">
-          <div v-if="legend.length > 0" class="legend__items">
-            <LegendItem
-              v-for="(item, index) in legend"
-              :key="index"
-              :color="item.color"
-              :text="item.text"
-              :counter="item.counter"
-              class="legend__item"
-            />
+          <div
+            v-if="legend.length > 0"
+            class="legend__items"
+          >
+            <Draggable v-model="legend">
+              <LegendItem
+                v-for="(item, index) in legend"
+                :key="index"
+                :color="item.color"
+                :text="item.text"
+                :counter="item.counter"
+                class="legend__item"
+              />
+            </Draggable>
           </div>
-          <span v-else class="legend--empty"> Список пуст </span>
-        </div>
-        <div class="legend__chart">
-          <!-- chart -->
+          <span
+            v-else
+            class="legend--empty"
+          > Список пуст </span>
         </div>
       </div>
-      <div v-else class="profile">
-        <div v-if="!person" class="profile__empty">Место пустое</div>
+      <div
+        v-else
+        class="profile"
+      >
+        <div
+          v-if="!person"
+          class="profile__empty"
+        >Место пустое</div>
 
-        <PersonCard :person="person" />
+        <PersonCard
+          v-else
+          :person="person"
+        />
+      </div>
+      <div
+        v-show="!isUserOpenned"
+        class="legend__chart"
+      >
+        <Doughnut ref="chart" />
       </div>
     </div>
   </div>
@@ -46,6 +75,9 @@
 import LegendItem from "./SideMenu/LegendItem.vue";
 import PersonCard from "./SideMenu/PersonCard.vue";
 import legend from "@/assets/data/legend.json";
+import Draggable from "vuedraggable";
+import { Doughnut } from "vue-chartjs";
+import ClickOutside from "vue-click-outside";
 
 export default {
   props: {
@@ -58,24 +90,62 @@ export default {
       default: null,
     },
   },
+
   components: {
     LegendItem,
     PersonCard,
+    Draggable,
+    Doughnut,
   },
+
   data() {
     return {
       legend: [],
     };
   },
+
+  directives: {
+    ClickOutside,
+  },
+
   created() {
     this.loadLegend();
   },
+
+  mounted() {
+    this.makeChart();
+  },
+
   methods: {
     loadLegend() {
       this.legend = legend;
     },
-    closeProfile() {
-      this.$emit("update:isUserOpenned", false);
+
+    closeProfile(event) {
+      if (!event.target.closest(".employer-place")) {
+        this.$emit("update:isUserOpenned", false);
+      }
+    },
+
+    makeChart() {
+      const chartData = {
+        labels: this.legend.map((item) => item.text),
+        datasets: [
+          {
+            label: "Легенда",
+            data: this.legend.map((item) => item.counter),
+            backgroundColor: this.legend.map((item) => item.color),
+          },
+        ],
+      };
+
+      const options = {
+        legend: {
+          display: false,
+        },
+      };
+
+      this.$refs.chart.renderChart(chartData, options);
     },
   },
 };
@@ -132,10 +202,6 @@ h3 {
 }
 
 .content {
-  flex: 1;
-}
-
-.content .legend {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
